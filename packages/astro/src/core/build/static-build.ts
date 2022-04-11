@@ -51,7 +51,7 @@ export async function staticBuild(opts: StaticBuildOptions) {
 		trackPageData(internals, component, pageData, astroModuleId, astroModuleURL);
 
 		if (pageData.route.type === 'page') {
-			const [renderers, mod] = pageData.preload;
+			const [renderers, renderHooks, mod] = pageData.preload;
 			const metadata = mod.$$metadata;
 
 			const topLevelImports = new Set([

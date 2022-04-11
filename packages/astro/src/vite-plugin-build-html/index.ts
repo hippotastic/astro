@@ -96,7 +96,7 @@ export function rollupPluginAstroScanHTML(options: PluginOptions): VitePlugin {
 			const jsInput: Set<string> = new Set();
 
 			for (const [component, pageData] of Object.entries(allPages)) {
-				const [renderers, mod] = pageData.preload;
+				const [renderers, renderHooks, mod] = pageData.preload;
 
 				// Hydrated components are statically identified.
 				for (const path of mod.$$metadata.hydratedComponentPaths()) {
@@ -106,7 +106,7 @@ export function rollupPluginAstroScanHTML(options: PluginOptions): VitePlugin {
 				for (const pathname of pageData.paths) {
 					pageNames.push(pathname.replace(/\/?$/, '/').replace(/^\//, ''));
 					const id = ASTRO_PAGE_PREFIX + pathname;
-					const response = await ssrRender(renderers, mod, {
+					const response = await ssrRender(renderers, renderHooks, mod, {
 						astroConfig,
 						filePath: new URL(`./${component}`, astroConfig.root),
 						logging,

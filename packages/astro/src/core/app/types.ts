@@ -4,6 +4,7 @@ import type {
 	MarkdownRenderOptions,
 	ComponentInstance,
 	SSRLoadedRenderer,
+	SSRLoadedRenderHook,
 } from '../../@types/astro';
 
 export type ComponentPath = string;
@@ -27,6 +28,7 @@ export interface SSRManifest {
 	};
 	pageMap: Map<ComponentPath, ComponentInstance>;
 	renderers: SSRLoadedRenderer[];
+	renderHooks: SSRLoadedRenderHook[];
 	entryModules: Record<string, string>;
 }
 

@@ -1,6 +1,6 @@
 import type { AddressInfo } from 'net';
 import type { ViteDevServer } from 'vite';
-import { AstroConfig, AstroRenderer, BuildConfig, RouteData } from '../@types/astro.js';
+import { AstroConfig, AstroRenderer, AstroRenderHook, BuildConfig, RouteData } from '../@types/astro.js';
 import { mergeConfig } from '../core/config.js';
 import ssgAdapter from '../adapter-ssg/index.js';
 import type { ViteConfigWithSSR } from '../core/create-vite.js';
@@ -25,6 +25,9 @@ export async function runHookConfigSetup({
 				command,
 				addRenderer(renderer: AstroRenderer) {
 					updatedConfig._ctx.renderers.push(renderer);
+				},
+				addRenderHook(renderHook: AstroRenderHook) {
+					updatedConfig._ctx.renderHooks.push(renderHook);
 				},
 				injectScript: (stage, content) => {
 					updatedConfig._ctx.scripts.push({ stage, content });

@@ -5,6 +5,7 @@ import type {
 	Params,
 	Props,
 	SSRLoadedRenderer,
+	SSRLoadedRenderHook,
 	RouteData,
 	SSRElement,
 } from '../../@types/astro';
@@ -14,6 +15,7 @@ import { renderHead, renderPage } from '../../runtime/server/index.js';
 import { getParams } from '../routing/params.js';
 import { createResult } from './result.js';
 import { findPathItemByKey, RouteCache, callGetStaticPaths } from './route-cache.js';
+import { runRenderHookPostProcessHtml } from '../../integrations/render-hooks.js';
 
 interface GetParamsAndPropsOptions {
 	mod: ComponentInstance;
@@ -77,6 +79,7 @@ export interface RenderOptions {
 	scripts: Set<SSRElement>;
 	resolve: (s: string) => Promise<string>;
 	renderers: SSRLoadedRenderer[];
+	renderHooks: SSRLoadedRenderHook[];
 	route?: RouteData;
 	routeCache: RouteCache;
 	site?: string;
@@ -97,6 +100,7 @@ export async function render(
 		pathname,
 		scripts,
 		renderers,
+		renderHooks,
 		request,
 		resolve,
 		route,
@@ -162,6 +166,15 @@ export async function render(
 	if (!/<!doctype html/i.test(html)) {
 		html = '<!DOCTYPE html>\n' + html;
 	}
+
+	// Allow integrations to process and modify the rendered page
+	html = await runRenderHookPostProcessHtml({
+		renderHooks,
+		routeType: 'page',
+		pathname,
+		ssr,
+		html,
+	});
 
 	return {
 		type: 'html',

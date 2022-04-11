@@ -218,7 +218,7 @@ async function handleRequest(
 
 		const filePath = new URL(`./${route.component}`, config.root);
 		const preloadedComponent = await preload({ astroConfig: config, filePath, viteServer });
-		const [, mod] = preloadedComponent;
+		const [, , mod] = preloadedComponent;
 		// attempt to get static paths
 		// if this fails, we have a bad URL match!
 		const paramsAndPropsRes = await getParamsAndProps({

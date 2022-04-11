@@ -45,10 +45,20 @@ export function vitePluginPages(opts: StaticBuildOptions, internals: BuildIntern
 					i++;
 				}
 
+				i = 0;
+				let renderHookItems = '';
+				for (const renderHook of opts.astroConfig._ctx.renderHooks) {
+					const variable = `_renderHook${i}`;
+					imports.push(`import ${variable} from '${renderHook.hookEntrypoint}';`);
+					renderHookItems += `Object.assign(${JSON.stringify(renderHook)}, { ssr: ${variable} }),`;
+					i++;
+				}
+
 				const def = `${imports.join('\n')}
 
 export const pageMap = new Map([${importMap}]);
-export const renderers = [${rendererItems}];`;
+export const renderers = [${rendererItems}];
+export const renderHooks = [${renderHookItems}];`;
 
 				return def;
 			}

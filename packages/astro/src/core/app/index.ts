@@ -74,6 +74,7 @@ export class App {
 		const url = new URL(request.url);
 		const manifest = this.#manifest;
 		const renderers = manifest.renderers;
+		const renderHooks = manifest.renderHooks;
 		const info = this.#routeDataToRouteInfo.get(routeData!)!;
 		const links = createLinkStylesheetElementSet(info.links, manifest.site);
 		const scripts = createModuleScriptElementWithSrcSet(info.scripts, manifest.site);
@@ -88,6 +89,7 @@ export class App {
 			pathname: url.pathname,
 			scripts,
 			renderers,
+			renderHooks,
 			async resolve(specifier: string) {
 				if (!(specifier in manifest.entryModules)) {
 					throw new Error(`Unable to resolve [${specifier}]`);
@@ -124,10 +126,13 @@ export class App {
 	): Promise<Response> {
 		const url = new URL(request.url);
 		const handler = mod as unknown as EndpointHandler;
+		const manifest = this.#manifest;
+		const renderHooks = manifest.renderHooks;
 		const result = await callEndpoint(handler, {
 			logging: this.#logging,
 			origin: url.origin,
 			pathname: url.pathname,
+			renderHooks,
 			request,
 			route: routeData,
 			routeCache: this.#routeCache,

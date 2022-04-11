@@ -9,6 +9,7 @@ import type {
 	ComponentInstance,
 	EndpointHandler,
 	SSRLoadedRenderer,
+	SSRLoadedRenderHook,
 } from '../../@types/astro';
 import type { BuildInternals } from '../../core/build/internal.js';
 import { debug, info } from '../logger/core.js';
@@ -111,7 +112,7 @@ async function generatePage(
 	ssrEntry: SingleFileBuiltModule
 ) {
 	let timeStart = performance.now();
-	const renderers = ssrEntry.renderers;
+	const { renderers, renderHooks } = ssrEntry;
 
 	const pageInfo = getPageDataByComponent(internals, pageData.route.component);
 	const linkIds: string[] = Array.from(pageInfo?.css ?? []);
@@ -132,6 +133,7 @@ async function generatePage(
 		hoistedId,
 		mod: pageModule,
 		renderers,
+		renderHooks,
 	};
 
 	const icon = pageData.route.type === 'page' ? green('▶') : magenta('λ');
@@ -156,6 +158,7 @@ interface GeneratePathOptions {
 	hoistedId: string | null;
 	mod: ComponentInstance;
 	renderers: SSRLoadedRenderer[];
+	renderHooks: SSRLoadedRenderHook[];
 }
 
 function addPageName(pathname: string, opts: StaticBuildOptions): void {
@@ -168,7 +171,7 @@ async function generatePath(
 	gopts: GeneratePathOptions
 ) {
 	const { astroConfig, logging, origin, routeCache } = opts;
-	const { mod, internals, linkIds, hoistedId, pageData, renderers } = gopts;
+	const { mod, internals, linkIds, hoistedId, pageData, renderers, renderHooks } = gopts;
 
 	// This adds the page name to the array so it can be shown as part of stats.
 	if (pageData.route.type === 'page') {
@@ -203,6 +206,7 @@ async function generatePath(
 		pathname,
 		scripts,
 		renderers,
+		renderHooks,
 		async resolve(specifier: string) {
 			const hashedFilePath = internals.entrySpecifierToBundleMap.get(specifier);
 			if (typeof hashedFilePath !== 'string') {

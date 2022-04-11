@@ -42,4 +42,5 @@ export interface StaticBuildOptions {
 export interface SingleFileBuiltModule {
 	pageMap: Map<ComponentPath, ComponentInstance>;
 	renderers: SSRLoadedRenderer[];
+	renderHooks: SSRLoadedRenderHooks[];
 }

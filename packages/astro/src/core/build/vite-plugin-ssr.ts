@@ -38,7 +38,8 @@ import * as _main from '${pagesVirtualModuleId}';
 import { deserializeManifest as _deserializeManifest } from 'astro/app';
 const _manifest = Object.assign(_deserializeManifest('${manifestReplace}'), {
 	pageMap: _main.pageMap,
-	renderers: _main.renderers
+	renderers: _main.renderers,
+	renderHooks: _main.renderHooks
 });
 const _args = ${adapter.args ? JSON.stringify(adapter.args) : 'undefined'};
 
@@ -115,6 +116,7 @@ function buildManifest(opts: StaticBuildOptions, internals: BuildInternals): Ser
 		},
 		pageMap: null as any,
 		renderers: [],
+		renderHooks: [],
 		entryModules,
 	};
 

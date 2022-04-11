@@ -691,6 +691,7 @@ export interface AstroConfig extends z.output<typeof AstroConfigSchema> {
 	_ctx: {
 		adapter: AstroAdapter | undefined;
 		renderers: AstroRenderer[];
+		renderHooks: AstroRenderHook[];
 		scripts: { stage: InjectedScriptStage; content: string }[];
 	};
 }
@@ -863,6 +864,29 @@ export interface SSRLoadedRenderer extends AstroRenderer {
 	};
 }
 
+export type PostProcessHtmlFn = (args: {
+	routeType: RouteType;
+	pathname: string;
+	html: string;
+	ssr: boolean;
+	options?: any;
+}) => void | Promise<void> | string | Promise<string>;
+
+export interface AstroRenderHook {
+	/** Name of the render hook. */
+	name: string;
+	/** Import entrypoint for the server/build/ssr render hook. */
+	hookEntrypoint: string;
+	/** Options to forward to the render hook function. */
+	options?: any;
+}
+
+export interface SSRLoadedRenderHook extends AstroRenderHook {
+	ssr: {
+		postProcessHtml: PostProcessHtmlFn;
+	};
+}
+
 export interface AstroIntegration {
 	/** The name of the integration. */
 	name: string;
@@ -873,6 +897,7 @@ export interface AstroIntegration {
 			command: 'dev' | 'build';
 			updateConfig: (newConfig: Record<string, any>) => void;
 			addRenderer: (renderer: AstroRenderer) => void;
+			addRenderHook: (renderHook: AstroRenderHook) => void;
 			injectScript: (stage: InjectedScriptStage, content: string) => void;
 			// TODO: Add support for `injectElement()` for full HTML element injection, not just scripts.
 			// This may require some refactoring of `scripts`, `styles`, and `links` into something

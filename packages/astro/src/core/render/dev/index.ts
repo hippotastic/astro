@@ -4,11 +4,13 @@ import type * as vite from 'vite';
 import type {
 	AstroConfig,
 	AstroRenderer,
+	AstroRenderHook,
 	ComponentInstance,
 	RouteData,
 	RuntimeMode,
 	SSRElement,
 	SSRLoadedRenderer,
+	SSRLoadedRenderHook,
 } from '../../../@types/astro';
 import { LogOptions } from '../../logger/core.js';
 import { render as coreRender } from '../core.js';
@@ -43,7 +45,7 @@ export interface SSROptions {
 	request: Request;
 }
 
-export type ComponentPreload = [SSRLoadedRenderer[], ComponentInstance];
+export type ComponentPreload = [SSRLoadedRenderer[], SSRLoadedRenderHook[], ComponentInstance];
 
 export type RenderResponse =
 	| { type: 'html'; html: string }
@@ -72,6 +74,27 @@ export async function loadRenderers(
 	return Promise.all(astroConfig._ctx.renderers.map((r) => loadRenderer(viteServer, r)));
 }
 
+async function loadRenderHook(
+	viteServer: vite.ViteDevServer,
+	renderHook: AstroRenderHook
+): Promise<SSRLoadedRenderHook> {
+	// Vite modules can be out-of-date when using an un-resolved url
+	// We also encountered inconsistencies when using the resolveUrl and resolveId helpers
+	// We've found that pulling the ID directly from the urlToModuleMap is the most stable!
+	const id =
+		viteServer.moduleGraph.urlToModuleMap.get(renderHook.hookEntrypoint)?.id ??
+		renderHook.hookEntrypoint;
+	const mod = (await viteServer.ssrLoadModule(id)) as { default: SSRLoadedRenderHook['ssr'] };
+	return { ...renderHook, ssr: mod.default };
+}
+
+export async function loadRenderHooks(
+	viteServer: vite.ViteDevServer,
+	astroConfig: AstroConfig
+): Promise<SSRLoadedRenderHook[]> {
+	return Promise.all(astroConfig._ctx.renderHooks.map((rh) => loadRenderHook(viteServer, rh)));
+}
+
 export async function preload({
 	astroConfig,
 	filePath,
@@ -79,15 +102,17 @@ export async function preload({
 }: Pick<SSROptions, 'astroConfig' | 'filePath' | 'viteServer'>): Promise<ComponentPreload> {
 	// Important: This needs to happen first, in case a renderer provides polyfills.
 	const renderers = await loadRenderers(viteServer, astroConfig);
+	const renderHooks = await loadRenderHooks(viteServer, astroConfig);
 	// Load the module from the Vite SSR Runtime.
 	const mod = (await viteServer.ssrLoadModule(fileURLToPath(filePath))) as ComponentInstance;
 
-	return [renderers, mod];
+	return [renderers, renderHooks, mod];
 }
 
 /** use Vite to SSR */
 export async function render(
 	renderers: SSRLoadedRenderer[],
+	renderHooks: SSRLoadedRenderHook[],
 	mod: ComponentInstance,
 	ssrOpts: SSROptions
 ): Promise<RenderResponse> {
@@ -184,6 +209,7 @@ export async function render(
 			return '/@fs' + prependForwardSlash(resolvedPath);
 		},
 		renderers,
+		renderHooks,
 		request,
 		route,
 		routeCache,
@@ -251,6 +277,6 @@ export async function ssr(
 	preloadedComponent: ComponentPreload,
 	ssrOpts: SSROptions
 ): Promise<RenderResponse> {
-	const [renderers, mod] = preloadedComponent;
-	return await render(renderers, mod, ssrOpts); // NOTE: without "await", errors won’t get caught below
+	const [renderers, renderHooks, mod] = preloadedComponent;
+	return await render(renderers, renderHooks, mod, ssrOpts); // NOTE: without "await", errors won’t get caught below
 }

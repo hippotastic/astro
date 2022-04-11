@@ -277,7 +277,7 @@ export async function validateConfig(
 	// First-Pass Validation
 	const result = {
 		...(await AstroConfigRelativeSchema.parseAsync(userConfig)),
-		_ctx: { scripts: [], renderers: [], adapter: undefined },
+		_ctx: { scripts: [], renderers: [], renderHooks: [], adapter: undefined },
 	};
 	// Final-Pass Validation (perform checks that require the full config object)
 	if (
