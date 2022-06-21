@@ -22,6 +22,11 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         node_version: [14, 16]
+        include:
+          - os: windows-latest
+            node_version: 16
+          - os: macos-latest
+            node_version: 16
       fail-fast: false
     steps:
       - name: Checkout
@@ -36,7 +41,6 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node_version }}
-          cache: 'pnpm'
 
       - name: Use Deno
         uses: denoland/setup-deno@v1
@@ -44,7 +48,10 @@ jobs:
           deno-version: v1.19.3
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm i
+      
+      - name: List installed dependencies
+        run: pnpm ls --recursive
 
       - name: Build Packages
         run: pnpm run build
