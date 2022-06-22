@@ -36,15 +36,17 @@ jobs:
           repository: withastro/docs
           path: smoke/docs
 
+      - name: Create root package.json
+        run: echo '{ }' > package.json
+
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v2.2.1
+
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
           node-version: 14
-
-      - name: Setup PNPM
-        uses: pnpm/action-setup@v2.2.1
-        with:
-          run_install: false
+          cache: 'pnpm'
 
       - name: Install dependencies (astro)
         working-directory: smoke/astro
