@@ -36,9 +36,6 @@ jobs:
           repository: withastro/docs
           path: smoke/docs
 
-      - name: Create root package.json
-        run: echo '{ }' > package.json
-
       - name: Setup PNPM
         uses: pnpm/action-setup@v2.2.1
         with:
@@ -59,7 +56,7 @@ jobs:
 
       - name: Install dependencies (docs)
         working-directory: smoke/docs
-        run: pnpm i --no-frozen-lockfile -D ../astro/packages/astro ../astro/packages/markdown/remark ../astro/packages/integrations/preact ../astro/packages/integrations/react ../astro/packages/integrations/sitemap
+        run: pnpm i -D ../astro/packages/astro ../astro/packages/markdown/remark ../astro/packages/integrations/preact ../astro/packages/integrations/react ../astro/packages/integrations/sitemap
 
       - name: Build site (docs)
         working-directory: smoke/docs
